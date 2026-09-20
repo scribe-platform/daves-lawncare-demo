@@ -1,10 +1,12 @@
 site: daves-lawncare-demo
+siteName: Dave's Lawn Care
 turnstileSiteKey: dev-mock-key
 contactCollection: inquiries
+
 collections:
   - name: posts
-    label: Posts
-    path: content/posts
+    label: Blog Posts
+    path: content/blog
     format: yaml-frontmatter
     view:
       primary: title
@@ -16,29 +18,89 @@ collections:
       - name: date
         type: date
         required: true
-      - name: heroImage
-        type: image
+      - name: author
+        type: string
+      - name: tags
+        type: string
+        list: true
       - name: body
         type: rich-text
         isBody: true
+
+  - name: packages
+    label: Service Packages
+    path: content/packages
+    format: yaml-frontmatter
+    view:
+      primary: title
+      sort: displayOrder
+      fields: [title, monthlyPrice, isActive, displayOrder]
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: monthlyPrice
+        label: Monthly Price ($)
+        type: number
+        required: true
+      - name: isActive
+        label: Active (show on website)
+        type: boolean
+        default: true
+      - name: displayOrder
+        label: Display Order
+        type: number
+        default: 0
+      - name: body
+        label: Description
+        type: rich-text
+        isBody: true
+
   - name: inquiries
-    label: Inquiries
+    label: Customer Inquiries
     path: content/inquiries
     format: yaml
     form: true
     workflow:
       field: status
-      states:
-        - new
-        - read
-        - archived
+      states: [new, contacted, closed]
+    notify: []
+    view:
+      fields: [name, email, status, createdAt]
+      sort: createdAt
     fields:
       - name: name
+        label: Name
         type: string
         required: true
       - name: email
+        label: Email
         type: string
         required: true
+      - name: phone
+        label: Phone
+        type: string
+      - name: serviceAddress
+        label: Service Address
+        type: string
+      - name: packageInterest
+        label: Package Interest
+        type: string
       - name: message
+        label: Message
         type: text
-        required: true
+      - name: status
+        label: Status
+        type: select
+        default: new
+        options:
+          - value: new
+            label: New
+          - value: contacted
+            label: Contacted
+          - value: closed
+            label: Closed
+      - name: createdAt
+        label: Submitted At
+        type: string
