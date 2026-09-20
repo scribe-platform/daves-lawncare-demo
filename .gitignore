@@ -1,13 +1,6 @@
-# Generated at build time by scripts/generate-config.mjs — never commit.
-/src/content.config.ts
-/src/site-config.ts
-
-# Per-customer data: created by the admin app (provisioning writes
-# .scribe.yml; content authoring writes into content/) or by
-# scripts/apply-fixture.mjs for local testing. Neither belongs in the
-# template package itself.
-/.scribe.yml
-/content/
+# This repo is a bespoke site: src/content.config.ts is hand-authored here
+# (not generated from .scribe.yml), and .scribe.yml plus content/ are the
+# product — the admin app writes them and they belong in version control.
 
 dist/
 .astro/

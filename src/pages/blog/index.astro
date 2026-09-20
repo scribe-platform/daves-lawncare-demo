@@ -1,24 +1,73 @@
 ---
-import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { url } from '../../lib/base';
+import { formatDate } from '../../lib/format';
+import { getCollection } from 'astro:content';
 
 const posts = (await getCollection('posts')).sort(
-  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+  (a, b) => (b.data.date?.valueOf() ?? 0) - (a.data.date?.valueOf() ?? 0),
 );
 ---
-<Base title="Blog">
-  <h1>Blog</h1>
-  {posts.length === 0 && <p>No posts yet.</p>}
-  <ul>
-    {posts.map((post) => (
-      <li>
-        <a href={url(`/blog/${post.id}`)}>{post.data.title}</a>
-        {post.data.author && <span class="author"> by {post.data.author}</span>}
-        <time datetime={post.data.date.toISOString()}>
-          {post.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}
-        </time>
-      </li>
-    ))}
-  </ul>
+
+<Base
+  title="Blog"
+  description="Lawn care tips and updates from Dave's Lawn Care."
+>
+  <section class="section container blog-page">
+    <span class="eyebrow">The blog</span>
+    <h1>Lawn care tips &amp; updates</h1>
+
+    <div class="post-list">
+      {
+        posts.map((post) => (
+          <a class="card post-card" href={url(`/blog/${post.id}`)}>
+            <h2>{post.data.title}</h2>
+            {post.data.author && <p class="author">By {post.data.author}</p>}
+            {post.data.date && <p class="date">{formatDate(post.data.date)}</p>}
+            <span class="read-more">Read more &rarr;</span>
+          </a>
+        ))
+      }
+    </div>
+
+    {posts.length === 0 && <p>No posts yet &mdash; check back soon.</p>}
+  </section>
 </Base>
+
+<style>
+  .blog-page h1 {
+    margin-bottom: 32px;
+  }
+
+  .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .post-card {
+    display: block;
+    color: var(--ink);
+  }
+
+  .post-card:hover {
+    text-decoration: none;
+    border-color: var(--green-400);
+  }
+
+  .post-card h2 {
+    margin-bottom: 4px;
+  }
+
+  .author,
+  .date {
+    color: var(--ink-soft);
+    margin: 0 0 8px;
+    font-size: 0.9rem;
+  }
+
+  .read-more {
+    font-weight: 600;
+    color: var(--green-700);
+  }
+</style>

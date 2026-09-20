@@ -1,15 +1,180 @@
 ---
 import Base from '../layouts/Base.astro';
-import ContactForm from '../components/ContactForm.astro';
-import { CONTACT_COLLECTION, CONTACT_FIELDS, SITE_SLUG, TURNSTILE_SITE_KEY } from '../site-config';
+import { url } from '../lib/base';
+import { getCollection } from 'astro:content';
+
+const allPackages = await getCollection('packages');
+const packages = allPackages
+  .filter((p) => p.data.isActive)
+  .sort((a, b) => a.data.displayOrder - b.data.displayOrder);
+
+// GitHub Actions resolves an unset repo variable to an empty string rather
+// than leaving it undefined, so `??` alone wouldn't fall back here.
+const apiBase = import.meta.env.PUBLIC_SCRIBE_API_URL || 'https://app.scribecms.com';
+const submissionUrl = `${apiBase}/api/submissions?site=daves-lawncare-demo&collection=inquiries`;
 ---
-<Base title="Contact">
-  <h1>Tell us about your lawn</h1>
-  <p>Fill out the form below and we'll follow up to schedule your free quote. No commitment required.</p>
-  <ContactForm
-    site={SITE_SLUG}
-    collection={CONTACT_COLLECTION}
-    turnstileSiteKey={TURNSTILE_SITE_KEY}
-    fields={CONTACT_FIELDS.length > 0 ? CONTACT_FIELDS : undefined}
-  />
+
+<Base
+  title="Get Started"
+  description="Request a free quote from Dave's Lawn Care. Tell us about your lawn and we'll get back to you."
+>
+  <section class="section container get-started">
+    <span class="eyebrow">Get started</span>
+    <h1>Tell us about your lawn</h1>
+    <p class="intro">
+      Fill out the form below and we'll follow up to schedule your free
+      quote. No commitment required.
+    </p>
+
+    <form id="inquiry-form" class="card inquiry-form" data-endpoint={submissionUrl}>
+      <label>
+        Name<span class="required">*</span>
+        <input type="text" name="name" required />
+      </label>
+
+      <label>
+        Email<span class="required">*</span>
+        <input type="email" name="email" required />
+      </label>
+
+      <label>
+        Phone
+        <input type="tel" name="phone" />
+      </label>
+
+      <label>
+        Service address / area
+        <input type="text" name="serviceAddress" placeholder="e.g. 123 Main St or your neighborhood" />
+      </label>
+
+      <label>
+        Which package are you interested in?
+        <select name="packageInterest">
+          <option value="">Not sure yet</option>
+          {packages.map((pkg) => <option value={pkg.id}>{pkg.data.title}</option>)}
+        </select>
+      </label>
+
+      <label>
+        Anything else we should know?
+        <textarea name="message" rows="4"></textarea>
+      </label>
+
+      <button type="submit" class="btn btn-primary">Request my free quote</button>
+
+      <p id="form-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
 </Base>
+
+<script>
+  const form = document.getElementById('inquiry-form');
+  const status = document.getElementById('form-status');
+
+  // Pre-select a package if ?package=slug is in the URL
+  const params = new URLSearchParams(window.location.search);
+  const preselectedPackage = params.get('package');
+  if (preselectedPackage) {
+    const select = form.elements.namedItem('packageInterest');
+    if (select) select.value = preselectedPackage;
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    status.textContent = 'Sending...';
+    status.className = '';
+
+    const formData = new FormData(form);
+    const body = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone') || undefined,
+      serviceAddress: formData.get('serviceAddress') || undefined,
+      packageInterest: formData.get('packageInterest') || undefined,
+      message: formData.get('message') || undefined,
+      // This site's Turnstile site key is the "dev-mock-key" demo value —
+      // Scribe's submissions endpoint accepts any non-empty token in that
+      // mode, so no visible captcha widget is needed here.
+      'cf-turnstile-response': 'dev-mock-token',
+    };
+
+    try {
+      const res = await fetch(form.dataset.endpoint, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error ?? 'Something went wrong');
+      }
+
+      form.reset();
+      form.hidden = true;
+      status.textContent = "Thanks! We've received your request and will be in touch soon.";
+      status.className = 'success';
+      status.hidden = false;
+    } catch (err) {
+      status.textContent = 'Sorry, something went wrong submitting the form. Please try again or email us directly.';
+      status.className = 'error';
+      submitButton.disabled = false;
+    }
+  });
+</script>
+
+<style>
+  .get-started h1 {
+    margin-bottom: 8px;
+  }
+
+  .intro {
+    max-width: 560px;
+    margin-bottom: 32px;
+    color: var(--ink-soft);
+  }
+
+  .inquiry-form {
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .inquiry-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-weight: 600;
+  }
+
+  .inquiry-form .required {
+    color: #c0392b;
+  }
+
+  .inquiry-form input,
+  .inquiry-form select,
+  .inquiry-form textarea {
+    font: inherit;
+    font-weight: 400;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  .inquiry-form button {
+    align-self: flex-start;
+  }
+
+  #form-status.success {
+    color: var(--green-700);
+    font-weight: 600;
+  }
+
+  #form-status.error {
+    color: #c0392b;
+    font-weight: 600;
+  }
+</style>

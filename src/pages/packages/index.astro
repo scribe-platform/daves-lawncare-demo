@@ -1,0 +1,91 @@
+---
+import Base from '../../layouts/Base.astro';
+import BlobShape from '../../components/graphics/BlobShape.astro';
+import { url } from '../../lib/base';
+import { formatPrice } from '../../lib/format';
+import { getCollection, render } from 'astro:content';
+
+const allPackages = await getCollection('packages');
+const packages = allPackages
+  .filter((p) => p.data.isActive)
+  .sort((a, b) => a.data.displayOrder - b.data.displayOrder);
+
+const renderedPackages = await Promise.all(
+  packages.map(async (pkg) => {
+    const { Content } = await render(pkg);
+    return { pkg, Content };
+  }),
+);
+---
+
+<Base
+  title="Packages"
+  description="Compare Dave's Lawn Care service packages, from a simple weekly mow to complete lawn care."
+>
+  <section class="section container packages-page">
+    <div class="page-intro">
+      <span class="eyebrow">Service packages</span>
+      <h1>Find the plan that fits your lawn</h1>
+      <p>
+        Every package includes reliable, on-schedule service from our crew.
+        Not sure which one is right for you? Reach out and we'll help you
+        choose.
+      </p>
+    </div>
+
+    <div class="package-grid">
+      {
+        renderedPackages.map(({ pkg, Content }) => (
+          <article class="card package-card">
+            <BlobShape class="package-blob" />
+            <h2>{pkg.data.title}</h2>
+            <p class="price">
+              {formatPrice(pkg.data.monthlyPrice)} <small>/ month</small>
+            </p>
+            <div class="prose">
+              <Content />
+            </div>
+            <a class="btn btn-primary" href={url(`/contact?package=${pkg.id}`)}>
+              Get started
+            </a>
+          </article>
+        ))
+      }
+    </div>
+
+    {
+      renderedPackages.length === 0 && (
+        <p>No packages are available right now &mdash; check back soon.</p>
+      )
+    }
+  </section>
+</Base>
+
+<style>
+  .page-intro {
+    max-width: 640px;
+    margin-bottom: 40px;
+  }
+
+  .package-grid {
+    display: grid;
+    gap: 28px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  .package-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .package-card :global(.package-blob) {
+    top: -80px;
+    right: -80px;
+    width: 240px;
+    height: 240px;
+  }
+
+  .package-card .btn {
+    margin-top: 16px;
+  }
+</style>

@@ -1,0 +1,79 @@
+---
+import LeafIcon from './graphics/LeafIcon.astro';
+import { url } from '../lib/base';
+---
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href={url('/')} class="brand">
+      <LeafIcon />
+      <span>Dave's Lawn Care</span>
+    </a>
+    <nav class="site-nav">
+      <a href={url('/')}>Home</a>
+      <a href={url('/packages')}>Packages</a>
+      <a href={url('/blog')}>Blog</a>
+      <a href={url('/contact')} class="btn btn-primary nav-cta">Get a Free Quote</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: var(--green-900);
+  }
+
+  .brand:hover {
+    text-decoration: none;
+  }
+
+  .brand :global(.icon) {
+    width: 32px;
+    height: 32px;
+  }
+
+  .site-nav {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    font-weight: 600;
+  }
+
+  .site-nav a {
+    color: var(--ink);
+  }
+
+  .site-nav a:hover {
+    color: var(--green-700);
+  }
+
+  .nav-cta {
+    padding: 8px 18px;
+    font-size: 0.9rem;
+  }
+
+  .nav-cta:hover {
+    color: white;
+  }
+</style>

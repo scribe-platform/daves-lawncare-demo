@@ -1,0 +1,31 @@
+---
+interface Props {
+  fill?: string
+  flip?: boolean
+}
+const { fill = 'var(--paper)', flip = false } = Astro.props as Props
+---
+
+<svg
+  viewBox="0 0 1200 80"
+  preserveAspectRatio="none"
+  role="img"
+  aria-hidden="true"
+  class:list={['wave-divider', { flip }]}
+>
+  <path
+    d="M0,32 C150,64 350,0 600,24 C850,48 1050,8 1200,32 L1200,80 L0,80 Z"
+    fill={fill}
+  />
+</svg>
+
+<style>
+  .wave-divider {
+    display: block;
+    width: 100%;
+    height: 60px;
+  }
+  .wave-divider.flip {
+    transform: scaleY(-1);
+  }
+</style>

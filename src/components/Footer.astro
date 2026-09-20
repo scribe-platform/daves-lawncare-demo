@@ -1,0 +1,72 @@
+---
+import { url } from '../lib/base';
+---
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <p class="footer-brand">Dave's Lawn Care</p>
+      <p class="placeholder-note">
+        Placeholder contact info below &mdash; replace with your real details.
+      </p>
+      <p>
+        📞 (555) 123-4567 &nbsp;·&nbsp;
+        <a href="mailto:hello@daveslawncare.example">hello@daveslawncare.example</a>
+      </p>
+      <p>Serving the Greater [Your City] Area</p>
+    </div>
+    <nav class="footer-nav">
+      <a href={url('/')}>Home</a>
+      <a href={url('/packages')}>Packages</a>
+      <a href={url('/blog')}>Blog</a>
+    </nav>
+  </div>
+  <div class="container">
+    <p class="copyright">&copy; {new Date().getFullYear()} Dave's Lawn Care. All rights reserved.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--green-900);
+    color: #eaf6ec;
+    padding: 48px 0 24px;
+    margin-top: 64px;
+  }
+
+  .footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .footer-brand {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: white;
+    margin-bottom: 8px;
+  }
+
+  .site-footer a {
+    color: var(--lime-300);
+  }
+
+  .footer-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .copyright {
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 16px;
+    font-size: 0.85rem;
+    color: #b7d6bd;
+  }
+
+  .site-footer .placeholder-note {
+    color: #b7d6bd;
+  }
+</style>

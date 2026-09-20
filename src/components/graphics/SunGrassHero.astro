@@ -1,0 +1,47 @@
+---
+---
+
+<svg
+  viewBox="0 0 1200 420"
+  preserveAspectRatio="xMidYMax slice"
+  role="img"
+  aria-hidden="true"
+  class="sun-grass-hero"
+>
+  <defs>
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="var(--sun-yellow)" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="var(--sun-yellow)" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="hillGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--green-400)" />
+      <stop offset="100%" stop-color="var(--green-700)" />
+    </linearGradient>
+  </defs>
+
+  <circle cx="1020" cy="90" r="180" fill="url(#sunGlow)" />
+  <circle cx="1020" cy="90" r="56" fill="var(--sun-yellow)" />
+
+  <path
+    d="M0,300 C150,230 300,340 480,290 C660,240 780,330 960,280 C1080,250 1150,290 1200,270 L1200,420 L0,420 Z"
+    fill="url(#hillGradient)"
+  />
+
+  <g fill="var(--green-900)" opacity="0.85">
+    <path d="M60,390 C55,360 65,340 75,320 C85,340 95,360 90,390 Z" />
+    <path d="M100,395 C95,368 108,345 120,328 C130,348 140,370 132,398 Z" />
+    <path d="M200,392 C195,362 205,342 215,322 C225,342 235,362 230,392 Z" />
+    <path d="M340,398 C335,370 348,348 360,330 C370,350 380,372 372,400 Z" />
+    <path d="M520,394 C515,364 525,344 535,324 C545,344 555,364 550,394 Z" />
+    <path d="M760,398 C755,370 768,348 780,330 C790,350 800,372 792,400 Z" />
+    <path d="M940,392 C935,362 945,342 955,322 C965,342 975,362 970,392 Z" />
+    <path d="M1100,398 C1095,370 1108,348 1120,330 C1130,350 1140,372 1132,400 Z" />
+  </g>
+</svg>
+
+<style>
+  .sun-grass-hero {
+    width: 100%;
+    height: auto;
+  }
+</style>
