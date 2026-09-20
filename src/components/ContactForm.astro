@@ -9,8 +9,11 @@ export interface Props {
 
 // Reads the admin app's base URL from a public env var rather than
 // hardcoding it, so a Cloudflare Tunnel domain (6.3) can be swapped in per
-// deployment without touching this component.
-const DEFAULT_API_BASE = import.meta.env.PUBLIC_SCRIBE_API_URL ?? 'https://app.scribecms.com';
+// deployment without touching this component. GitHub Actions resolves an
+// unset repo variable (`vars.PUBLIC_SCRIBE_API_URL` in deploy.yml) to an
+// empty string rather than leaving it undefined, so `??` alone doesn't
+// fall back — an empty string must be treated the same as unset.
+const DEFAULT_API_BASE = import.meta.env.PUBLIC_SCRIBE_API_URL || 'https://app.scribecms.com';
 
 const {
   site,
