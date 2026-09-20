@@ -76,16 +76,19 @@ const renderedPackages = await Promise.all(
   .package-card {
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
   .package-card :global(.package-blob) {
-    top: -80px;
-    right: -80px;
-    width: 240px;
-    height: 240px;
+    top: -60px;
+    right: -60px;
+    width: 220px;
   }
 
   .package-card .btn {
-    margin-top: 16px;
+    align-self: flex-start;
+    margin-top: auto;
   }
 </style>

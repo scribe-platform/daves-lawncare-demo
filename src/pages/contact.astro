@@ -150,7 +150,7 @@ const submissionUrl = `${apiBase}/api/submissions?site=daves-lawncare-demo&colle
     font-weight: 600;
   }
 
-  .inquiry-form .required {
+  .required {
     color: #c0392b;
   }
 
@@ -158,23 +158,26 @@ const submissionUrl = `${apiBase}/api/submissions?site=daves-lawncare-demo&colle
   .inquiry-form select,
   .inquiry-form textarea {
     font: inherit;
-    font-weight: 400;
     padding: 10px 12px;
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
+    background: var(--sky-tint);
   }
 
   .inquiry-form button {
     align-self: flex-start;
   }
 
+  #form-status {
+    font-weight: 600;
+    min-height: 1.2em;
+  }
+
   #form-status.success {
     color: var(--green-700);
-    font-weight: 600;
   }
 
   #form-status.error {
     color: #c0392b;
-    font-weight: 600;
   }
 </style>
