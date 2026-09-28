@@ -1,7 +1,0 @@
-name: Turnstile Verification Test
-email: verify@example.com
-phone: 555-0100
-serviceAddress: 123 Test Lane
-message: Automated check that Turnstile enforcement works end to end. Safe to delete.
-status: new
-notes: ""
