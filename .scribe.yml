@@ -1,8 +1,7 @@
 site: daves-lawncare-demo
 siteName: Dave's Lawn Care
-turnstileSiteKey: dev-mock-key
+turnstileSiteKey: 0x4AAAAAAFHtLCWg1S7IznJp
 contactCollection: inquiries
-
 collections:
   - name: posts
     label: Blog Posts
@@ -16,18 +15,35 @@ collections:
       - name: title
         type: string
         required: true
+        hidden: false
+        readonly: false
+        isBody: false
       - name: date
         type: date
         required: true
+        hidden: false
+        readonly: false
+        isBody: false
       - name: author
         type: string
+        required: false
+        hidden: false
+        readonly: false
+        isBody: false
       - name: tags
         type: string
+        required: false
+        hidden: false
+        readonly: false
+        isBody: false
         list: true
       - name: body
         type: rich-text
+        required: false
+        hidden: false
+        readonly: false
         isBody: true
-
+    form: false
   - name: packages
     label: Service Packages
     description: Pricing plans shown on the site's services page.
@@ -36,67 +52,113 @@ collections:
     view:
       primary: title
       sort: displayOrder
-      fields: [title, monthlyPrice, isActive, displayOrder]
+      fields:
+        - title
+        - monthlyPrice
+        - isActive
+        - displayOrder
     fields:
       - name: title
-        label: Title
         type: string
+        label: Title
         required: true
+        hidden: false
+        readonly: false
+        isBody: false
       - name: monthlyPrice
+        type: number
         label: Monthly Price ($)
-        type: number
         required: true
+        hidden: false
+        readonly: false
+        isBody: false
       - name: isActive
-        label: Active (show on website)
         type: boolean
+        label: Active (show on website)
+        required: false
         default: true
+        hidden: false
+        readonly: false
+        isBody: false
       - name: displayOrder
-        label: Display Order
         type: number
+        label: Display Order
+        required: false
         default: 0
+        hidden: false
+        readonly: false
+        isBody: false
       - name: body
-        label: Description
         type: rich-text
+        label: Description
+        required: false
+        hidden: false
+        readonly: false
         isBody: true
-
+    form: false
   - name: inquiries
     label: Customer Inquiries
     description: Submissions from the site's contact form.
     path: content/inquiries
     format: yaml
-    form: true
-    workflow:
-      field: status
-      states: [new, contacted, closed]
-    notify: []
     view:
-      fields: [name, email, status, createdAt]
+      fields:
+        - name
+        - email
+        - status
+        - createdAt
       sort: createdAt
     fields:
       - name: name
+        type: string
         label: Name
-        type: string
         required: true
+        hidden: false
+        readonly: false
+        isBody: false
       - name: email
+        type: string
         label: Email
-        type: string
         required: true
+        hidden: false
+        readonly: false
+        isBody: false
       - name: phone
+        type: string
         label: Phone
-        type: string
+        required: false
+        hidden: false
+        readonly: false
+        isBody: false
       - name: serviceAddress
+        type: string
         label: Service Address
-        type: string
+        required: false
+        hidden: false
+        readonly: false
+        isBody: false
       - name: packageInterest
-        label: Package Interest
         type: string
+        label: Package Interest
+        required: false
+        hidden: false
+        readonly: false
+        isBody: false
       - name: message
-        label: Message
         type: text
+        label: Message
+        required: false
+        hidden: false
+        readonly: false
+        isBody: false
       - name: status
-        label: Status
         type: select
+        label: Status
+        required: false
         default: new
+        hidden: false
+        readonly: false
+        isBody: false
         options:
           - value: new
             label: New
@@ -105,5 +167,17 @@ collections:
           - value: closed
             label: Closed
       - name: createdAt
-        label: Submitted At
         type: string
+        label: Submitted At
+        required: false
+        hidden: false
+        readonly: false
+        isBody: false
+    form: true
+    workflow:
+      field: status
+      states:
+        - new
+        - contacted
+        - closed
+    notify: []
