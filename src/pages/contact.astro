@@ -1,7 +1,20 @@
 ---
+import { readFileSync } from 'node:fs';
 import Base from '../layouts/Base.astro';
 import { url } from '../lib/base';
 import { getCollection } from 'astro:content';
+
+// The Turnstile site key lives in .scribe.yml, written there by
+// `scribe site update --turnstile-key`. Read it at build time rather than
+// hardcoding it, so rotating the key is a Scribe command plus a rebuild.
+// Matched with a regex instead of a YAML parser to keep this site free of a
+// dependency for one top-level scalar that Scribe itself writes.
+// Failing the build beats shipping a contact form that silently 401s.
+const scribeYml = readFileSync(new URL('../../.scribe.yml', import.meta.url), 'utf-8');
+const turnstileSiteKey = scribeYml.match(/^turnstileSiteKey:\s*['"]?([^'"\s]+)['"]?\s*$/m)?.[1];
+if (!turnstileSiteKey) {
+  throw new Error('No turnstileSiteKey in .scribe.yml — the contact form cannot be built without it.');
+}
 
 const allPackages = await getCollection('packages');
 const packages = allPackages
@@ -60,12 +73,16 @@ const submissionUrl = `${apiBase}/api/submissions?site=daves-lawncare-demo&colle
         <textarea name="message" rows="4"></textarea>
       </label>
 
+      <div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>
+
       <button type="submit" class="btn btn-primary">Request my free quote</button>
 
       <p id="form-status" role="status" aria-live="polite"></p>
     </form>
   </section>
 </Base>
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 <script>
   const form = document.getElementById('inquiry-form');
@@ -87,6 +104,17 @@ const submissionUrl = `${apiBase}/api/submissions?site=daves-lawncare-demo&colle
     status.className = '';
 
     const formData = new FormData(form);
+    // Turnstile injects this hidden input into the form once its challenge
+    // resolves. In managed mode that's usually automatic and instant, but a
+    // fast submit can beat it.
+    const turnstileToken = formData.get('cf-turnstile-response');
+    if (!turnstileToken) {
+      status.textContent = 'Just a moment — the verification check is still running. Please try again.';
+      status.className = 'error';
+      submitButton.disabled = false;
+      return;
+    }
+
     const body = {
       name: formData.get('name'),
       email: formData.get('email'),
@@ -94,10 +122,7 @@ const submissionUrl = `${apiBase}/api/submissions?site=daves-lawncare-demo&colle
       serviceAddress: formData.get('serviceAddress') || undefined,
       packageInterest: formData.get('packageInterest') || undefined,
       message: formData.get('message') || undefined,
-      // This site's Turnstile site key is the "dev-mock-key" demo value —
-      // Scribe's submissions endpoint accepts any non-empty token in that
-      // mode, so no visible captcha widget is needed here.
-      'cf-turnstile-response': 'dev-mock-token',
+      'cf-turnstile-response': turnstileToken,
     };
 
     try {
@@ -121,6 +146,9 @@ const submissionUrl = `${apiBase}/api/submissions?site=daves-lawncare-demo&colle
       status.textContent = 'Sorry, something went wrong submitting the form. Please try again or email us directly.';
       status.className = 'error';
       submitButton.disabled = false;
+      // A Turnstile token is single-use — without a reset, a retry would
+      // send the spent token and fail verification no matter what.
+      window.turnstile?.reset();
     }
   });
 </script>
