@@ -1,5 +1,6 @@
 ---
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import Base from '../layouts/Base.astro';
 import { url } from '../lib/base';
 import { getCollection } from 'astro:content';
@@ -10,7 +11,10 @@ import { getCollection } from 'astro:content';
 // Matched with a regex instead of a YAML parser to keep this site free of a
 // dependency for one top-level scalar that Scribe itself writes.
 // Failing the build beats shipping a contact form that silently 401s.
-const scribeYml = readFileSync(new URL('../../.scribe.yml', import.meta.url), 'utf-8');
+// Resolved from cwd (the repo root during a build), not import.meta.url —
+// this frontmatter gets bundled into dist/, so a relative URL would look
+// for the file next to the built chunk.
+const scribeYml = readFileSync(resolve(process.cwd(), '.scribe.yml'), 'utf-8');
 const turnstileSiteKey = scribeYml.match(/^turnstileSiteKey:\s*['"]?([^'"\s]+)['"]?\s*$/m)?.[1];
 if (!turnstileSiteKey) {
   throw new Error('No turnstileSiteKey in .scribe.yml — the contact form cannot be built without it.');
