@@ -6,6 +6,7 @@ contactCollection: inquiries
 collections:
   - name: posts
     label: Blog Posts
+    description: Articles shown on the site's blog page.
     path: content/blog
     format: yaml-frontmatter
     view:
@@ -29,6 +30,7 @@ collections:
 
   - name: packages
     label: Service Packages
+    description: Pricing plans shown on the site's services page.
     path: content/packages
     format: yaml-frontmatter
     view:
@@ -59,6 +61,7 @@ collections:
 
   - name: inquiries
     label: Customer Inquiries
+    description: Submissions from the site's contact form.
     path: content/inquiries
     format: yaml
     form: true
