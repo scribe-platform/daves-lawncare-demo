@@ -27,7 +27,7 @@ const packages = allPackages
 
 // GitHub Actions resolves an unset repo variable to an empty string rather
 // than leaving it undefined, so `??` alone wouldn't fall back here.
-const apiBase = import.meta.env.PUBLIC_SCRIBE_API_URL || 'https://app.scribecms.com';
+const apiBase = import.meta.env.PUBLIC_SCRIBE_API_URL || 'https://scribe.weaverdigital.io';
 const submissionUrl = `${apiBase}/api/submissions?site=daves-lawncare-demo&collection=inquiries`;
 ---
 
