@@ -2,6 +2,8 @@ site: daves-lawncare-demo
 siteName: Dave's Lawn Care
 turnstileSiteKey: 0x4AAAAAAFHtLCWg1S7IznJp
 contactCollection: inquiries
+umamiWebsiteId: 8274c1c4-a731-4142-bb1b-4ece7cbb263a
+umamiScriptUrl: https://analytics.weaverdigital.io/script.js
 collections:
   - name: posts
     label: Blog Posts
