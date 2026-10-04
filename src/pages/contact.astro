@@ -43,7 +43,7 @@ const submissionUrl = `${apiBase}/api/submissions?site=daves-lawncare-demo&colle
       quote. No commitment required.
     </p>
 
-    <form id="inquiry-form" class="card inquiry-form" data-endpoint={submissionUrl}>
+    <form id="inquiry-form" class="card inquiry-form" data-endpoint={submissionUrl} data-scribe-retry>
       <label>
         Name<span class="required">*</span>
         <input type="text" name="name" required />
@@ -91,6 +91,63 @@ const submissionUrl = `${apiBase}/api/submissions?site=daves-lawncare-demo&colle
 <script>
   const form = document.getElementById('inquiry-form');
   const status = document.getElementById('form-status');
+  const submitButton = form.querySelector('button[type="submit"]');
+
+  // RFC 0024 — a submission the server never received is kept here and replayed
+  // on the next page load, so a visitor is never told their request sent when it
+  // did not. The <form> declares this with data-scribe-retry; the two belong
+  // together and must not separate.
+  const STORAGE_KEY = 'scribe_pending_submission_daves-lawncare-demo_inquiries';
+
+  const readPending = () => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
+  const savePending = (payload) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      // localStorage unavailable (private browsing, quota). The status message
+      // is already honest about the failure; there is nothing more to persist.
+    }
+  };
+  const clearPending = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // see savePending
+    }
+  };
+
+  const GENERIC = 'Sorry, something went wrong submitting the form. Please try again or email us directly.';
+  const UNREACHABLE = "We couldn't send that yet — it's saved and will retry.";
+
+  function say(message, kind) {
+    status.textContent = message;
+    status.className = kind ?? '';
+    status.hidden = false;
+  }
+
+  async function send(body) {
+    const res = await fetch(form.dataset.endpoint, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) return;
+    // A non-2xx means the server answered and said why, which is a different
+    // thing from never reaching it. `answered` picks whose copy the visitor
+    // reads; `retryable` decides whether a later attempt could plausibly land.
+    const err = await res.json().catch(() => ({}));
+    const error = new Error((err.error ?? '').trim() || GENERIC);
+    error.answered = true;
+    error.retryable = res.status >= 500;
+    throw error;
+  }
 
   // Pre-select a package if ?package=slug is in the URL
   const params = new URLSearchParams(window.location.search);
@@ -102,10 +159,8 @@ const submissionUrl = `${apiBase}/api/submissions?site=daves-lawncare-demo&colle
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const submitButton = form.querySelector('button[type="submit"]');
     submitButton.disabled = true;
-    status.textContent = 'Sending...';
-    status.className = '';
+    say('Sending...');
 
     const formData = new FormData(form);
     // Turnstile injects this hidden input into the form once its challenge
@@ -113,8 +168,7 @@ const submissionUrl = `${apiBase}/api/submissions?site=daves-lawncare-demo&colle
     // fast submit can beat it.
     const turnstileToken = formData.get('cf-turnstile-response');
     if (!turnstileToken) {
-      status.textContent = 'Just a moment — the verification check is still running. Please try again.';
-      status.className = 'error';
+      say('Just a moment — the verification check is still running. Please try again.', 'error');
       submitButton.disabled = false;
       return;
     }
@@ -130,31 +184,48 @@ const submissionUrl = `${apiBase}/api/submissions?site=daves-lawncare-demo&colle
     };
 
     try {
-      const res = await fetch(form.dataset.endpoint, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error ?? 'Something went wrong');
-      }
-
+      await send(body);
+      clearPending();
       form.reset();
       form.hidden = true;
-      status.textContent = "Thanks! We've received your request and will be in touch soon.";
-      status.className = 'success';
-      status.hidden = false;
+      say("Thanks! We've received your request and will be in touch soon.", 'success');
     } catch (err) {
-      status.textContent = 'Sorry, something went wrong submitting the form. Please try again or email us directly.';
-      status.className = 'error';
+      // Never claim a success the server didn't give, and never paper over its
+      // message with ours.
+      if (err.answered) {
+        if (err.retryable) savePending(body);
+        say(err.message, 'error');
+      } else {
+        savePending(body);
+        say(UNREACHABLE, 'error');
+      }
       submitButton.disabled = false;
       // A Turnstile token is single-use — without a reset, a retry would
       // send the spent token and fail verification no matter what.
       window.turnstile?.reset();
     }
   });
+
+  // Replay on the next page load, which is what makes the queue worth having.
+  (async function retryPending() {
+    const pending = readPending();
+    if (!pending) return;
+    try {
+      await send(pending);
+      clearPending();
+      form.reset();
+      form.hidden = true;
+      say("Thanks! We've received your request and will be in touch soon.", 'success');
+    } catch (err) {
+      // Replaying a rejection (a stale Turnstile token, a validation error) on
+      // every page load would loop forever, so drop it and show what the server
+      // said. Anything else stays queued for next time.
+      if (err.answered && !err.retryable) {
+        clearPending();
+        say(err.message, 'error');
+      }
+    }
+  })();
 </script>
 
 <style>
